@@ -5,8 +5,25 @@ const verifiedPayments = new Set<string>();
 
 export async function POST(request: NextRequest) {
   const authHeader = request.headers.get("authorization");
+  const paymentHeader = request.headers.get("x-payment");
 
-  // Check if this is a payment verification request
+  // Check if this is a x402 payment request (new format)
+  if (paymentHeader) {
+    // In a real implementation, you would validate the x402 payment header
+    // For demo purposes, we'll accept any payment header as valid
+    if (paymentHeader && paymentHeader.length > 0) {
+      verifiedPayments.add(paymentHeader);
+
+      return NextResponse.json({
+        message: "Protected content accessed successfully!",
+        paid: true,
+        timestamp: new Date().toISOString(),
+        transactionSignature: "x402-payment-" + Date.now(), // Mock signature for demo
+      });
+    }
+  }
+
+  // Check if this is a payment verification request (legacy format)
   if (authHeader?.startsWith("x402 svm/1; signature=")) {
     const signature = authHeader.replace("x402 svm/1; signature=", "");
 

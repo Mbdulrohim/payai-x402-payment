@@ -12,7 +12,10 @@ import {
 } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import dynamic from "next/dynamic";
-import { createPaymentHeader } from "@payai/x402/client";
+import {
+  createPaymentHeader,
+  selectPaymentRequirements,
+} from "@payai/x402/client";
 import { createSigner } from "@payai/x402/types";
 import { Connection, PublicKey, Transaction } from "@solana/web3.js";
 import {
@@ -124,8 +127,17 @@ export default function Home() {
       if (response.status === 402) {
         const paymentData = await response.json();
         if (paymentData.accepts?.length) {
-          // Process the payment using the correct x402 flow
-          const signature = await processSolanaPayment(paymentData.accepts[0]);
+          // Select the appropriate payment requirement (Solana USDC)
+          const selectedPayment = selectPaymentRequirements(
+            paymentData.accepts,
+            "solana",
+            "exact"
+          );
+
+          console.log("Selected payment:", selectedPayment);
+
+          // For now, fall back to manual payment processing
+          const signature = await processSolanaPayment(selectedPayment);
 
           // Retry the request with the payment header
           const retryResponse = await fetch("/api/protected", {
@@ -136,7 +148,7 @@ export default function Home() {
             },
             body: JSON.stringify({
               message: "Requesting access to protected content via x402",
-              payment_data_token: paymentData.accepts[0].data,
+              payment_data_token: (selectedPayment as any).data,
             }),
           });
 
@@ -152,7 +164,7 @@ export default function Home() {
               data
             )}`
           );
-          setMessage(`tx:${signature}`);
+          setMessage(`tx:${data.transactionSignature || "completed"}`);
         } else {
           throw new Error("No payment methods accepted");
         }
