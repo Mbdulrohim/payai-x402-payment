@@ -26,8 +26,8 @@ x402 is an open payment protocol that enables **just-in-time payments** for digi
 
 1. Clone the repository:
 ```bash
-git clone https://github.com/Mbdulrohim/x402-payment.git
-cd x402-payment
+git clone https://github.com/Mbdulrohim/payai-x402-payment.git
+cd payai-x402-payment
 ```
 
 2. Install dependencies:
